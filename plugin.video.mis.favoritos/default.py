@@ -59,10 +59,13 @@ def list_folder(folder_id):
     """
     # Use 'movies' content to allow Poster/Fanart views
     xbmcplugin.setContent(ADDON_HANDLE, 'movies')
-    xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL)
+    # Removed sort method to keep Management Items at the bottom!
+    # xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     
-    # 1. Get contents
+    # 1. Get contents and Sort them in Python
     items = STORAGE.get_folder_contents(folder_id)
+    # Sort: Folders first, then Items. Both alphabetical.
+    items.sort(key=lambda x: (x['type'] != 'folder', x['name'].lower()))
     
     # 2. List Items
     for item in items:
