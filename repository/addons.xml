@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mis.favoritos" name="Mis Favoritos Organizados" version="0.0.3" provider-name="Antigravity">
+<addon id="plugin.video.mis.favoritos" name="MisFav" version="0.0.4" provider-name="Antigravity">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
     </requires>
@@ -21,14 +21,14 @@
     </extension>
 
     <extension point="xbmc.addon.metadata">
-        <summary lang="en_GB">Organized Favorites Manager</summary>
-        <summary lang="es_ES">Gestor de Favoritos Organizados</summary>
-        <description lang="en_GB">Manage your Kodi favorites with infinite nested folders and custom sorting.</description>
-        <description lang="es_ES">Gestiona tus favoritos de Kodi con carpetas anidadas infinitas y orden personalizado.</description>
+        <summary lang="en_GB">Smart Favorites Organizer</summary>
+        <summary lang="es_ES">Organizador Inteligente de Favoritos</summary>
+        <description lang="en_GB">Organize your Kodi favorites with folders, import native favorites, and manage everything with context menus.</description>
+        <description lang="es_ES">Organiza tus favoritos de Kodi con carpetas, importa favoritos nativos y gestiona todo con menús contextuales.</description>
         <platform>all</platform>
         <assets>
-            <!-- <icon>icon.png</icon>
-            <fanart>fanart.jpg</fanart> -->
+            <icon>icon.png</icon>
+            <!-- <fanart>fanart.jpg</fanart> -->
         </assets>
     </extension>
 </addon>

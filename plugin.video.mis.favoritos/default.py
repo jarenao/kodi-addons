@@ -50,6 +50,8 @@ def main():
         edit_item(item_id)
     elif mode == 'import_kodi':
         import_from_kodi(folder_id)
+    elif mode == 'multi_move':
+        multi_move_items(folder_id)
         
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
@@ -57,7 +59,8 @@ def list_folder(folder_id):
     """
     List contents of a specific folder from JSON storage.
     """
-    xbmcplugin.setContent(ADDON_HANDLE, 'videos')
+    xbmcplugin.setContent(ADDON_HANDLE, 'files')
+    xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     
     # 1. Get contents
     items = STORAGE.get_folder_contents(folder_id)
@@ -65,7 +68,7 @@ def list_folder(folder_id):
     # 2. List Items
     for item in items:
         if item['type'] == 'folder':
-            li = xbmcgui.ListItem(label=f"[COLOR blue]{item['name']}[/COLOR]")
+            li = xbmcgui.ListItem(label=f"[COLOR dodgerblue]🗂️ {item['name']}[/COLOR]")
             li.setArt({'icon': 'DefaultFolder.png', 'thumb': 'DefaultFolder.png'})
             url = build_url({'mode': 'folder', 'folder_id': item['id']})
             is_folder = True
@@ -98,13 +101,13 @@ def list_folder(folder_id):
     
     # 3. Management Menu (Always at the bottom/top?)
     # Create "Add Folder" Item
-    li = xbmcgui.ListItem(label="[COLOR green]+ Crear Carpeta[/COLOR]")
+    li = xbmcgui.ListItem(label="[COLOR lime]➕ Crear Carpeta[/COLOR]")
     li.setArt({'icon': 'DefaultFolderSquare.png'})
     url = build_url({'mode': 'add_folder', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
     
     # Create "Add Item" Item
-    li = xbmcgui.ListItem(label="[COLOR yellow]+ Añadir Favorito (Manual)[/COLOR]")
+    li = xbmcgui.ListItem(label="[COLOR gold]⭐ Añadir Enlace Directo[/COLOR]")
     li.setArt({'icon': 'DefaultAddonVideo.png'})
     url = build_url({'mode': 'add_item', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
@@ -114,6 +117,13 @@ def list_folder(folder_id):
     li.setArt({'icon': 'DefaultAddonService.png'})
     url = build_url({'mode': 'import_kodi', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
+    
+    # Multi-select move
+    if len(items) > 0:  # Only show if there are items
+        li = xbmcgui.ListItem(label="[COLOR orange]📦 Mover Múltiples[/COLOR]")
+        li.setArt({'icon': 'DefaultAddonService.png'})
+        url = build_url({'mode': 'multi_move', 'folder_id': folder_id})
+        xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
 
 def add_new_folder(parent_id):
     kbd = xbmc.Keyboard('', 'Nombre de la carpeta')
@@ -196,15 +206,33 @@ def delete_item(item_id):
                 xbmcgui.Dialog().notification('Error', 'No se pudo eliminar', xbmcgui.NOTIFICATION_ERROR)
 
 def move_item(item_id):
+    # Get current parent folder
+    current_parent = STORAGE._find_parent(STORAGE.data, item_id)
+    current_parent_id = current_parent['id'] if current_parent else None
+    
     # Get all folders
     folders = STORAGE.get_all_folders_flat()
-    folder_names = [f"{'  ' * depth}{name}" for fid, name, depth in folders]
-    folder_ids = [fid for fid, name, depth in folders]
+    folder_names = []
+    folder_ids = []
+    
+    for fid, name, depth in folders:
+        indent = '  ' * depth
+        # Mark current folder
+        if fid == current_parent_id:
+            folder_names.append(f"{indent}[COLOR lime]✓ {name} [ACTUAL][/COLOR]")
+        else:
+            folder_names.append(f"{indent}{name}")
+        folder_ids.append(fid)
     
     # Show selection dialog
     selected = xbmcgui.Dialog().select('Mover a carpeta:', folder_names)
     if selected >= 0:
         target_folder_id = folder_ids[selected]
+        # Don't move if it's the same folder
+        if target_folder_id == current_parent_id:
+            xbmcgui.Dialog().notification('Info', 'Ya está en esa carpeta', xbmcgui.NOTIFICATION_INFO)
+            return
+        
         if STORAGE.move_item(item_id, target_folder_id):
             xbmc.executebuiltin('Container.Refresh')
             xbmcgui.Dialog().notification('Éxito', 'Favorito movido', xbmcgui.NOTIFICATION_INFO)
@@ -255,6 +283,59 @@ def import_from_kodi(folder_id):
         count = IMPORTER.import_to_folder(STORAGE, folder_id, selected_favs)
         xbmc.executebuiltin('Container.Refresh')
         xbmcgui.Dialog().notification('Importación completa', f'{count} favoritos importados', xbmcgui.NOTIFICATION_INFO)
+
+def multi_move_items(current_folder_id):
+    """Select multiple items and move them to a folder."""
+    # Get items in current folder
+    items = STORAGE.get_folder_contents(current_folder_id)
+    
+    # Filter only items (not folders)
+    movable_items = [item for item in items if item['type'] == 'item']
+    
+    if not movable_items:
+        xbmcgui.Dialog().ok('Sin elementos', 'No hay favoritos para mover en esta carpeta.')
+        return
+    
+    # Show multi-select dialog
+    item_names = [item['name'] for item in movable_items]
+    selected_indices = xbmcgui.Dialog().multiselect('Selecciona favoritos a mover:', item_names)
+    
+    if not selected_indices:
+        return
+    
+    # Get all folders for destination
+    folders = STORAGE.get_all_folders_flat()
+    folder_names = []
+    folder_ids = []
+    
+    for fid, name, depth in folders:
+        indent = '  ' * depth
+        # Mark current folder
+        if fid == current_folder_id:
+            folder_names.append(f"{indent}[COLOR lime]✓ {name} [ACTUAL][/COLOR]")
+        else:
+            folder_names.append(f"{indent}{name}")
+        folder_ids.append(fid)
+    
+    # Show destination folder selection
+    selected_folder = xbmcgui.Dialog().select('Mover a carpeta:', folder_names)
+    if selected_folder >= 0:
+        target_folder_id = folder_ids[selected_folder]
+        
+        # Don't move if it's the same folder
+        if target_folder_id == current_folder_id:
+            xbmcgui.Dialog().notification('Info', 'Ya están en esa carpeta', xbmcgui.NOTIFICATION_INFO)
+            return
+        
+        # Move all selected items
+        moved_count = 0
+        for idx in selected_indices:
+            item_id = movable_items[idx]['id']
+            if STORAGE.move_item(item_id, target_folder_id):
+                moved_count += 1
+        
+        xbmc.executebuiltin('Container.Refresh')
+        xbmcgui.Dialog().notification('Éxito', f'{moved_count} favoritos movidos', xbmcgui.NOTIFICATION_INFO)
 
 def build_url(query):
     return BASE_URL + '?' + urllib.parse.urlencode(query)
