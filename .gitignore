@@ -18,6 +18,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Allow plugin resources/lib
+!plugin.*/resources/lib/
 parts/
 sdist/
 var/
