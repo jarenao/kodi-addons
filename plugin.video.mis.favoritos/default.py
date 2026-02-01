@@ -57,7 +57,8 @@ def list_folder(folder_id):
     """
     List contents of a specific folder from JSON storage.
     """
-    xbmcplugin.setContent(ADDON_HANDLE, 'files')
+    # Use 'movies' content to allow Poster/Fanart views
+    xbmcplugin.setContent(ADDON_HANDLE, 'movies')
     xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL)
     
     # 1. Get contents
@@ -68,6 +69,8 @@ def list_folder(folder_id):
         if item['type'] == 'folder':
             li = xbmcgui.ListItem(label=f"[COLOR dodgerblue]🗂️ {item['name']}[/COLOR]")
             li.setArt({'icon': 'DefaultFolder.png', 'thumb': 'DefaultFolder.png'})
+            # Set InfoTag to allow better view types
+            li.setInfo('video', {'title': item['name'], 'plot': 'Carpeta'})
             url = build_url({'mode': 'folder', 'folder_id': item['id']})
             is_folder = True
             
@@ -82,7 +85,9 @@ def list_folder(folder_id):
             # It's an item/file
             li = xbmcgui.ListItem(label=item['name'])
             thumb = item.get('thumbnail', 'DefaultShortcut.png')
-            li.setArt({'icon': 'DefaultShortcut.png', 'thumb': thumb})
+            li.setArt({'icon': 'DefaultShortcut.png', 'thumb': thumb, 'poster': thumb, 'fanart': thumb})
+            # Set InfoTag to allow better view types
+            li.setInfo('video', {'title': item['name'], 'mediatype': 'video'})
             url = item['url']
             is_folder = False
             
@@ -101,18 +106,21 @@ def list_folder(folder_id):
     # Create "Add Folder" Item
     li = xbmcgui.ListItem(label="[COLOR lime]➕ Crear Carpeta[/COLOR]")
     li.setArt({'icon': 'DefaultFolderSquare.png'})
+    li.setInfo('video', {'title': 'Crear Carpeta', 'plot': 'Crear una nueva carpeta'})
     url = build_url({'mode': 'add_folder', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
     
     # Create "Add Item" Item
     li = xbmcgui.ListItem(label="[COLOR gold]⭐ Añadir Enlace Directo[/COLOR]")
     li.setArt({'icon': 'DefaultAddonVideo.png'})
+    li.setInfo('video', {'title': 'Añadir Enlace', 'plot': 'Añadir manualmente un enlace'})
     url = build_url({'mode': 'add_item', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
     
     # Import from Kodi
     li = xbmcgui.ListItem(label="[COLOR cyan]📥 Importar desde Kodi[/COLOR]")
     li.setArt({'icon': 'DefaultAddonService.png'})
+    li.setInfo('video', {'title': 'Importar', 'plot': 'Importar favoritos nativos'})
     url = build_url({'mode': 'import_kodi', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
     
@@ -120,13 +128,14 @@ def list_folder(folder_id):
     if len(items) > 0:  # Only show if there are items
         li = xbmcgui.ListItem(label="[COLOR orange]📦 Mover[/COLOR]")
         li.setArt({'icon': 'DefaultAddonService.png'})
+        li.setInfo('video', {'title': 'Mover', 'plot': 'Mover múltiples elementos'})
         url = build_url({'mode': 'multi_move', 'folder_id': folder_id})
         xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
 
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
     
-    # Force List View (Mode 50 is standard List in most skins)
-    xbmc.executebuiltin('Container.SetViewMode(50)')
+    # Force Poster View (501) for large images
+    xbmc.executebuiltin('Container.SetViewMode(501)')
 
 def add_new_folder(parent_id):
     kbd = xbmc.Keyboard('', 'Nombre de la carpeta')

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mis.favoritos" name="MisFav" version="0.0.5" provider-name="Antigravity">
+<addon id="plugin.video.mis.favoritos" name="MisFav" version="0.0.6" provider-name="Antigravity">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
     </requires>
