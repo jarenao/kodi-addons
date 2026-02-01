@@ -52,8 +52,6 @@ def main():
         import_from_kodi(folder_id)
     elif mode == 'multi_move':
         multi_move_items(folder_id)
-        
-    xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
 def list_folder(folder_id):
     """
@@ -83,8 +81,8 @@ def list_folder(folder_id):
         else:
             # It's an item/file
             li = xbmcgui.ListItem(label=item['name'])
-            thumb = item.get('thumbnail', 'DefaultVideo.png')
-            li.setArt({'icon': 'DefaultVideo.png', 'thumb': thumb})
+            thumb = item.get('thumbnail', 'DefaultShortcut.png')
+            li.setArt({'icon': 'DefaultShortcut.png', 'thumb': thumb})
             url = item['url']
             is_folder = False
             
@@ -120,10 +118,15 @@ def list_folder(folder_id):
     
     # Multi-select move
     if len(items) > 0:  # Only show if there are items
-        li = xbmcgui.ListItem(label="[COLOR orange]📦 Mover Múltiples[/COLOR]")
+        li = xbmcgui.ListItem(label="[COLOR orange]📦 Mover[/COLOR]")
         li.setArt({'icon': 'DefaultAddonService.png'})
         url = build_url({'mode': 'multi_move', 'folder_id': folder_id})
         xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
+
+    xbmcplugin.endOfDirectory(ADDON_HANDLE)
+    
+    # Force List View (Mode 50 is standard List in most skins)
+    xbmc.executebuiltin('Container.SetViewMode(50)')
 
 def add_new_folder(parent_id):
     kbd = xbmc.Keyboard('', 'Nombre de la carpeta')
