@@ -88,6 +88,8 @@ def list_folder(folder_id):
             li.setArt({'icon': 'DefaultShortcut.png', 'thumb': thumb, 'poster': thumb, 'fanart': thumb})
             # Set InfoTag to allow better view types
             li.setInfo('video', {'title': item['name'], 'mediatype': 'video'})
+            # CRITICAL: Set IsPlayable property so Kodi knows to play it
+            li.setProperty('IsPlayable', 'true')
             url = item['url']
             is_folder = False
             
