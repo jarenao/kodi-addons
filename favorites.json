@@ -1,0 +1,13 @@
+{
+  "id": "root",
+  "name": "Root",
+  "type": "folder",
+  "children": [
+    {
+      "id": "62d7785d-08c3-4a57-9358-6cc4339b8cd7",
+      "name": "TestFolder",
+      "type": "folder",
+      "children": []
+    }
+  ]
+}
