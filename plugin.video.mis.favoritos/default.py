@@ -110,36 +110,36 @@ def list_folder(folder_id):
     # 3. Management Menu (Always at the bottom/top?)
     # Create "Add Folder" Item
     li = xbmcgui.ListItem(label="[COLOR lime]➕ Crear Carpeta[/COLOR]")
-    li.setArt({'icon': 'DefaultFolderSquare.png', 'thumb': 'DefaultFolderSquare.png', 'poster': 'DefaultFolderSquare.png', 'fanart': 'DefaultFolderSquare.png'})
+    li.setArt({'icon': 'DefaultFolder.png', 'thumb': 'DefaultFolder.png', 'poster': 'DefaultFolder.png', 'fanart': 'DefaultFolder.png'})
     li.setInfo('video', {'title': 'Crear Carpeta', 'plot': 'Crear una nueva carpeta'})
-    li.setProperty('IsPlayable', 'false')  # Not playable
+    # li.setProperty('IsPlayable', 'false')  # Not needed if isFolder=True
     url = build_url({'mode': 'add_folder', 'folder_id': folder_id})
     xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
     
     # Create "Add Item" Item
     li = xbmcgui.ListItem(label="[COLOR gold]⭐ Añadir Enlace Directo[/COLOR]")
-    li.setArt({'icon': 'DefaultAddonVideo.png', 'thumb': 'DefaultAddonVideo.png', 'poster': 'DefaultAddonVideo.png', 'fanart': 'DefaultAddonVideo.png'})
+    li.setArt({'icon': 'DefaultFolder.png', 'thumb': 'DefaultFolder.png', 'poster': 'DefaultFolder.png', 'fanart': 'DefaultFolder.png'})
     li.setInfo('video', {'title': 'Añadir Enlace', 'plot': 'Añadir manualmente un enlace'})
-    li.setProperty('IsPlayable', 'false')
+    # Treat as folder to avoid playback error
     url = build_url({'mode': 'add_item', 'folder_id': folder_id})
-    xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
     
     # Import from Kodi
     li = xbmcgui.ListItem(label="[COLOR cyan]📥 Importar[/COLOR]")
-    li.setArt({'icon': 'DefaultAddonService.png', 'thumb': 'DefaultAddonService.png', 'poster': 'DefaultAddonService.png', 'fanart': 'DefaultAddonService.png'})
+    li.setArt({'icon': 'DefaultFolder.png', 'thumb': 'DefaultFolder.png', 'poster': 'DefaultFolder.png', 'fanart': 'DefaultFolder.png'})
     li.setInfo('video', {'title': 'Importar', 'plot': 'Importar favoritos nativos'})
-    li.setProperty('IsPlayable', 'false')
+    # Treat as folder to avoid playback error
     url = build_url({'mode': 'import_kodi', 'folder_id': folder_id})
-    xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
+    xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
     
     # Multi-select move
     if len(items) > 0:  # Only show if there are items
         li = xbmcgui.ListItem(label="[COLOR orange]📦 Mover[/COLOR]")
-        li.setArt({'icon': 'DefaultAddonService.png', 'thumb': 'DefaultAddonService.png', 'poster': 'DefaultAddonService.png', 'fanart': 'DefaultAddonService.png'})
+        li.setArt({'icon': 'DefaultFolder.png', 'thumb': 'DefaultFolder.png', 'poster': 'DefaultFolder.png', 'fanart': 'DefaultFolder.png'})
         li.setInfo('video', {'title': 'Mover', 'plot': 'Mover múltiples elementos'})
-        li.setProperty('IsPlayable', 'false')
+        # Treat as folder to avoid playback error
         url = build_url({'mode': 'multi_move', 'folder_id': folder_id})
-        xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=False)
+        xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
 
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
     
